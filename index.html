@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCCR - Consultor Cognosistémico Ampliado</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d1117; /* Fondo oscuro tipo GitHub */
+        }
+        .container-card {
+            background-color: #161b22; /* Tarjeta más clara */
+            border: 1px solid #30363d;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+        .response-area {
+            white-space: pre-wrap; /* Mantiene saltos de línea y espacios */
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 min-h-screen flex items-start justify-center">
+
+    <!-- Main Application Container -->
+    <div class="w-full max-w-4xl container-card p-6 md:p-8 rounded-xl mt-8">
+        <h1 class="text-3xl font-extrabold text-white mb-2 text-center">
+            <span class="text-green-400">TCCR</span>: Consultor Cognosistémico <span class="text-green-600">(Ampliado)</span>
+        </h1>
+        <p class="text-gray-400 text-center mb-6">
+            Análisis y diagnóstico profundo. Respuestas que integran la **totalidad** de la TCCR de Simunovic (2025) con conocimiento contextual amplio.
+        </p>
+
+        <!-- Input Area -->
+        <div class="mb-6">
+            <label for="userQuestion" class="block text-sm font-medium text-gray-300 mb-2">
+                Formula tu pregunta (Conceptual, Aplicada, Filosófica, etc.)
+            </label>
+            <textarea id="userQuestion" rows="4" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 text-white focus:ring-green-500 focus:border-green-500 transition duration-150" placeholder="Ej: ¿Cómo analiza la TCCR la emergencia de un movimiento social global (conocimiento general) utilizando la dinámica de capas y los memes de fricción (constructos TCCR)?"></textarea>
+        </div>
+
+        <!-- Action Button -->
+        <button id="submitButton" onclick="askTCCR()" class="w-full flex items-center justify-center px-6 py-3 border border-transparent text-base font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-150 ease-in-out disabled:opacity-50">
+            <svg id="loadingSpinner" class="animate-spin -ml-1 mr-3 h-5 w-5 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span id="buttonText">Consultar a la TCCR</span>
+        </button>
+
+        <!-- Response Area -->
+        <div id="responseContainer" class="mt-8 border-t border-gray-700 pt-6">
+            <h2 class="text-xl font-semibold text-white mb-4">Respuesta Cognosistémica:</h2>
+            <div id="tccrResponse" class="response-area p-4 bg-gray-800 rounded-lg text-gray-200 min-h-[100px] border border-gray-700">
+                <!-- La respuesta generada aparecerá aquí -->
+                <p class="text-gray-500 italic">Esperando tu primera consulta. El consultor ahora integra la totalidad de la documentación de la TCCR con conocimiento contextual para un análisis más profundo.</p>
+            </div>
+        </div>
+
+        <!-- Optional: Display System/Persona Details -->
+        <div class="mt-6 p-4 bg-gray-900 rounded-lg text-sm text-gray-500 border border-gray-800">
+            <p class="font-semibold text-gray-400">Persona y Marco de Rigor (Actualizado):</p>
+            <p class="text-xs mt-1">Actuando como un Trabajador Social experto en la TCCR. La respuesta se basa en la **totalidad del marco teórico y epistemológico de Simunovic (2025)**, utilizando constructos específicos como el **Cognosistema**, la **Propuesta Tridimensional**, las **Fases Delta**, la **Jerarquía Narrativa** y los **Memes Cognosistémicos**, y contextualizando su análisis con el conocimiento amplio (cultura general) del modelo.</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Global variables for Firebase configuration (required for Canvas environment)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Firebase Imports (Necessary for environment setup, even if Firestore isn't used)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        
+        // --- Initialization ---
+        let app;
+        let auth;
+        
+        try {
+            if (Object.keys(firebaseConfig).length > 0) {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                if (initialAuthToken) {
+                    signInWithCustomToken(auth, initialAuthToken).catch(e => console.error("Firebase Auth Error with custom token:", e));
+                } else {
+                    signInAnonymously(auth).catch(e => console.error("Firebase Auth Error anonymous:", e));
+                }
+            }
+        } catch (e) {
+            console.error("Firebase initialization failed:", e);
+        }
+        
+        // --- TCCR Consultant Logic ---
+        
+        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=";
+        const API_KEY = ""; // Key is managed by the Canvas environment
+
+        // ** PROMPT DE SISTEMA AMPLIADO **
+        // Se elimina la lista restrictiva de constructos y se pide la integración total de la teoría y el conocimiento general.
+        const systemPrompt = `Actúa como un trabajador social experto y riguroso en la "Teoría Cognosistémica de la Construcción Relacional Psicosocial Humana" (TCCR) de Jalin Simunovic (2025). Tu lenguaje es académico, claro y tu foco es la intervención psicosocial basada en evidencia y los principios de la TCCR.
+
+Tu misión es responder a cualquier tipo de pregunta (conceptual, aplicada, filosófica, sociológica o comparativa) utilizando **la totalidad del marco teórico y epistemológico de la TCCR** proporcionado, incluyendo sus fundamentos, estructura, crítica al Trabajo Social actual y aplicaciones.
+
+Para un análisis más profundo, debes **integrar y canalizar el conocimiento contextual amplio (cultura general, historia, sociología, etc.)** a través de la óptica de la TCCR, como un experto que aplica la teoría para interpretar fenómenos complejos del mundo real.
+
+Asegúrate de que tu análisis sea coherente, articule orgánicamente las dimensiones micro, meso y macro según sea pertinente, y utilice los constructos clave (Cognosistema, Ontología Sistémico-Relacional, Epistemología Cognosistémica, Metodología Ecosistémica-Narrativa, 8 Elementos Narrativos, Ciclo Vital, Fases Beta/Alfa/Delta, Jerarquía y Memes Cognosistémicos) de forma natural y explicativa, según el nivel de complejidad requerido por la pregunta.`;
+
+        const submitButton = document.getElementById('submitButton');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const buttonText = document.getElementById('buttonText');
+        const tccrResponseDiv = document.getElementById('tccrResponse');
+        const userQuestionTextarea = document.getElementById('userQuestion');
+
+        const MAX_RETRIES = 5;
+        const BASE_DELAY_MS = 1000;
+
+        /**
+         * Llama a la API de Gemini para obtener una respuesta especializada en TCCR.
+         * Implementa un mecanismo de reintento con retroceso exponencial.
+         * @param {string} userQuery - La pregunta del usuario.
+         */
+        async function fetchWithRetry(userQuery, retries = 0) {
+            const payload = {
+                contents: [{ parts: [{ text: userQuery }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] },
+            };
+
+            const url = `${API_URL}${API_KEY}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    if (response.status === 429 && retries < MAX_RETRIES) {
+                        const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 1000;
+                        console.warn(`Rate limit exceeded (429). Retrying in ${delay / 1000}s...`);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        return fetchWithRetry(userQuery, retries + 1);
+                    }
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                return response.json();
+
+            } catch (error) {
+                if (retries < MAX_RETRIES) {
+                    const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 1000;
+                    console.error(`Fetch failed. Retrying in ${delay / 1000}s...`, error);
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                    return fetchWithRetry(userQuery, retries + 1);
+                }
+                throw new Error("API request failed after multiple retries.");
+            }
+        }
+
+        window.askTCCR = async function() {
+            const userQuery = userQuestionTextarea.value.trim();
+
+            if (!userQuery) {
+                tccrResponseDiv.innerHTML = '<p class="text-yellow-400 italic">Por favor, introduce una pregunta para iniciar la consulta.</p>';
+                return;
+            }
+
+            // UI: Set loading state
+            submitButton.disabled = true;
+            loadingSpinner.classList.remove('hidden');
+            buttonText.textContent = 'Analizando Cognosistema...';
+            tccrResponseDiv.innerHTML = '<p class="text-green-400 animate-pulse">El Consultor TCCR está formulando una respuesta rigurosa, integrando toda la teoría con el contexto amplio...</p>';
+
+            try {
+                const result = await fetchWithRetry(userQuery);
+                const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No se pudo obtener una respuesta válida del modelo.";
+                
+                // Format the output: replace markdown headers/bolding with HTML/CSS for better visual
+                const formattedText = text
+                    .replace(/^### (.*)$/gm, '<h3 class="text-xl font-bold mt-4 mb-2 text-green-400">$1</h3>')
+                    .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3 text-green-300">$1</h2>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+                tccrResponseDiv.innerHTML = formattedText;
+
+            } catch (error) {
+                console.error("Error en la consulta TCCR:", error);
+                tccrResponseDiv.innerHTML = `<p class="text-red-400"><strong>¡Error Crítico!</strong> Ocurrió un fallo en la comunicación con el Cognosistema. (${error.message}). Por favor, intenta de nuevo.</p>`;
+            } finally {
+                // UI: Reset state
+                submitButton.disabled = false;
+                loadingSpinner.classList.add('hidden');
+                buttonText.textContent = 'Consultar a la TCCR';
+            }
+        }
+    </script>
+</body>
+</html>
