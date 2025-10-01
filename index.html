@@ -119,6 +119,7 @@ Estas reglas deben ser la guía central para tu análisis, sin perjuicio de inte
 Tu misión es responder a cualquier tipo de pregunta (conceptual, aplicada, filosófica, sociológica o comparativa) utilizando el marco TCCR.
 
 CRÍTICO: Nunca menciones ni te refieras a las 'Reglas de Oro' (ej: Regla 1, Regla 4) en tu respuesta final. Mantén la fidelidad conceptual sin mostrar el proceso de validación interna.
+CRÍTICO: Nunca uses el formato de negrita de Markdown (doble asterisco: **) en la respuesta final. Usa un lenguaje descriptivo para enfatizar si es necesario, pero sin caracteres de formato.
 
 Para un análisis más profundo, debes integrar y canalizar el conocimiento contextual amplio (cultura general, historia, sociología, etc.) a través de la óptica de la TCCR, asegurando que se haga una correcta diferenciación en el análisis teórico requerido por el usuario consultante.
 
@@ -156,7 +157,7 @@ Asegúrate de que tu análisis articule orgánicamente las dimensiones micro, me
                 if (!response.ok) {
                     if (response.status === 429 && retries < MAX_RETRIES) {
                         const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 1000;
-                        console.warn(`Rate limit exceeded (429). Retrying in ${delay / 1000}s...`);
+                        // console.warn(`Rate limit exceeded (429). Retrying in ${delay / 1000}s...`); // Omit logging
                         await new Promise(resolve => setTimeout(resolve, delay));
                         return fetchWithRetry(userQuery, retries + 1);
                     }
@@ -168,7 +169,7 @@ Asegúrate de que tu análisis articule orgánicamente las dimensiones micro, me
             } catch (error) {
                 if (retries < MAX_RETRIES) {
                     const delay = BASE_DELAY_MS * Math.pow(2, retries) + Math.random() * 1000;
-                    console.error(`Fetch failed. Retrying in ${delay / 1000}s...`, error);
+                    // console.error(`Fetch failed. Retrying in ${delay / 1000}s...`, error); // Omit logging
                     await new Promise(resolve => setTimeout(resolve, delay));
                     return fetchWithRetry(userQuery, retries + 1);
                 }
@@ -194,10 +195,16 @@ Asegúrate de que tu análisis articule orgánicamente las dimensiones micro, me
                 const result = await fetchWithRetry(userQuery);
                 let text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No se pudo obtener una respuesta válida del modelo.";
                 
-                // Format the output: Reemplazamos encabezados de Markdown para asegurar que no hay símbolos
-                const formattedText = text
+                // 1. Reemplazo de negritas Markdown (**) por HTML/Tailwind para estética.
+                // Captura el texto entre ** y lo envuelve en un span con estilos Tailwind.
+                let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<span class="font-bold text-white">$1</span>');
+                
+                // 2. Formateo de encabezados Markdown
+                formattedText = formattedText
                     .replace(/^### (.*)$/gm, '<h3 class="text-xl font-bold mt-4 mb-2 text-green-400">$1</h3>')
-                    .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3 text-green-300">$1</h2>');
+                    .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3 text-green-300">$1</h2>')
+                    .replace(/^\* (.*)$/gm, '<li class="ml-4 list-disc text-gray-300">$1</li>')
+                    .replace(/^- (.*)$/gm, '<li class="ml-4 list-disc text-gray-300">$1</li>');
 
                 tccrResponseDiv.innerHTML = formattedText;
 
