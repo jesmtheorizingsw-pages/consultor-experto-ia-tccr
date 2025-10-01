@@ -30,7 +30,7 @@
             <span class="text-green-400">TCCR</span>: Consultor Cognosistémico <span class="text-green-600">(Ampliado)</span>
         </h1>
         <p class="text-gray-400 text-center mb-6">
-            Análisis y diagnóstico profundo. Respuestas que integran la **totalidad** de la TCCR de Simunovic (2025) con conocimiento contextual amplio.
+            Análisis y diagnóstico profundo. Respuestas que integran la <span class="font-bold text-white">totalidad</span> de la TCCR de Simunovic (2025) con conocimiento contextual amplio.
         </p>
 
         <!-- Input Area -->
@@ -98,15 +98,15 @@
         // --- TCCR Consultant Logic ---
         
         const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=";
-        const API_KEY = "AIzaSyDcSrf5qmddi3G3YdqmaQozqCzf8won3iA"; //
+        const API_KEY = ""; // Key is managed by the Canvas environment
 
         // ** PROMPT DE SISTEMA AMPLIADO **
-        // Se elimina la lista restrictiva de constructos y se pide la integración total de la teoría y el conocimiento general.
+        // Se ha añadido la instrucción de NO USAR negritas con doble asterisco (**) en la respuesta.
         const systemPrompt = `Actúa como un trabajador social experto y riguroso en la "Teoría Cognosistémica de la Construcción Relacional Psicosocial Humana" (TCCR) de Jalin Simunovic (2025). Tu lenguaje es académico, claro y tu foco es la intervención psicosocial basada en evidencia y los principios de la TCCR.
 
-Tu misión es responder a cualquier tipo de pregunta (conceptual, aplicada, filosófica, sociológica o comparativa) utilizando **la totalidad del marco teórico y epistemológico de la TCCR** proporcionado, incluyendo sus fundamentos, estructura, crítica al Trabajo Social actual y aplicaciones.
+Tu misión es responder a cualquier tipo de pregunta (conceptual, aplicada, filosófica, sociológica o comparativa) utilizando la totalidad del marco teórico y epistemológico de la TCCR proporcionado, incluyendo sus fundamentos, estructura, crítica al Trabajo Social actual y aplicaciones. **IMPORTANTE: No utilices el formato de negritas con doble asterisco (**) en tu respuesta, ni en títulos ni en el cuerpo del texto.**
 
-Para un análisis más profundo, debes **integrar y canalizar el conocimiento contextual amplio (cultura general, historia, sociología, etc.)** a través de la óptica de la TCCR, como un experto que aplica la teoría para interpretar fenómenos complejos del mundo real.
+Para un análisis más profundo, debes integrar y canalizar el conocimiento contextual amplio (cultura general, historia, sociología, etc.) a través de la óptica de la TCCR, como un experto que aplica la teoría para interpretar fenómenos complejos del mundo real.
 
 Asegúrate de que tu análisis sea coherente, articule orgánicamente las dimensiones micro, meso y macro según sea pertinente, y utilice los constructos clave (Cognosistema, Ontología Sistémico-Relacional, Epistemología Cognosistémica, Metodología Ecosistémica-Narrativa, 8 Elementos Narrativos, Ciclo Vital, Fases Beta/Alfa/Delta, Jerarquía y Memes Cognosistémicos) de forma natural y explicativa, según el nivel de complejidad requerido por la pregunta.`;
 
@@ -180,11 +180,11 @@ Asegúrate de que tu análisis sea coherente, articule orgánicamente las dimens
                 const result = await fetchWithRetry(userQuery);
                 const text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No se pudo obtener una respuesta válida del modelo.";
                 
-                // Format the output: replace markdown headers/bolding with HTML/CSS for better visual
+                // Format the output: Reemplazamos encabezados de Markdown, pero ELIMINAMOS el reemplazo de **negritas**
                 const formattedText = text
                     .replace(/^### (.*)$/gm, '<h3 class="text-xl font-bold mt-4 mb-2 text-green-400">$1</h3>')
-                    .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3 text-green-300">$1</h2>')
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                    .replace(/^## (.*)$/gm, '<h2 class="text-2xl font-bold mt-6 mb-3 text-green-300">$1</h2>');
+                    // Se elimina la línea .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>'); para que los ** no sean convertidos.
 
                 tccrResponseDiv.innerHTML = formattedText;
 
