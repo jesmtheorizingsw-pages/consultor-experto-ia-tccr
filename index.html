@@ -102,8 +102,8 @@
         
         // --- TCCR Consultant Logic ---
         
-        const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=";
-        const API_KEY = "AIzaSyDcSrf5qmddi3G3YdqmaQozqCzf8won3iA"; //
+        const ENDPOINT = "https://timely-hummingbird-fa79a0.netlify.app/.netlify/functions/gemini";
+        const APP_TOKEN = ""; // opcional: si activaste APP_CLIENT_TOKEN en Netlify
 
         // ** PROMPT DE SISTEMA AMPLIADO Y REFORZADO CON REGLAS DE ORO ACTUALIZADAS **
         const systemPrompt = `Actúa como un trabajador social experto y riguroso en la "Teoría Cognosistémica de la Construcción Relacional Psicosocial Humana" (TCCR) de Jalin Simunovic (2025). Tu lenguaje es académico, claro y tu foco es la intervención psicosocial basada en evidencia y los principios de la TCCR.
@@ -146,17 +146,14 @@ Asegúrate de que tu análisis articule orgánicamente las dimensiones micro, me
          * @param {string} userQuery - La pregunta del usuario.
          */
         async function fetchWithRetry(userQuery, retries = 0) {
-            const payload = {
-                contents: [{ parts: [{ text: userQuery }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] },
-            };
+            const payload = { text: userQuery, systemInstruction: systemPrompt };
 
-            const url = `${API_URL}${API_KEY}`;
+            const url = ENDPOINT;
             
             try {
                 const response = await fetch(url, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-App-Key': APP_TOKEN },
                     body: JSON.stringify(payload)
                 });
 
@@ -199,7 +196,7 @@ Asegúrate de que tu análisis articule orgánicamente las dimensiones micro, me
 
             try {
                 const result = await fetchWithRetry(userQuery);
-                let text = result?.candidates?.[0]?.content?.parts?.[0]?.text || "Error: No se pudo obtener una respuesta válida del modelo.";
+                let text = result?.output?.text || "Error: No se pudo obtener una respuesta válida del modelo.";
                 
                 // 1. Reemplazo de negritas Markdown (**) por HTML/Tailwind para estética.
                 // Captura el texto entre ** y lo envuelve en un span con estilos Tailwind.
